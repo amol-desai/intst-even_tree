@@ -15,10 +15,10 @@ class Node(object):
     def set_root(self):
         self.isRoot = True
 
-##S = raw_input()
-##N = map(int,S.split())
-##num_nodes = N.pop(0)
-##num_edges = N.pop(0)
+#S = raw_input()
+#N = map(int,S.split())
+#num_nodes = N.pop(0)
+#num_edges = N.pop(0)
 
 N = map(int,raw_input().split())
 num_nodes = N.pop(0)
@@ -48,25 +48,55 @@ def print_tree():
         print node.isRoot
         print "*******************"
 
-count = 0
-def snip():
-    global count
-    for node in nodes:
-        if node.isLeaf:
-            while ((len(node.parent.children) > 1) & (node.parent.isRoot == False)):
-                node = node.parent
-            if node.parent.isRoot == False:
-                node.parent.parent.children.remove(node.parent)
-                if(len(node.parent.parent.children) == 0):
-                    node.parent.parent.isLeaf = True
-                node.parent.parent = node.parent
-                node.parent.set_root()
-                count = count + 1
+def sub_tree_size(node):
+#    print "sub_tree_size:",node.id
+    global size
+##    if node.isLeaf:
+##        pass
+##    else:
+    for child in node.children:
+        size = sub_tree_size(child) + 1
+#    print "size =",size
+#    print "exit sub_tree_size:",node.id
+    return size
 
-old_count = 0      
-snip()
+def snip(node):
+#    print "snip:",node.id
+    global count
+    global size
+    size = 1
+    if node.isRoot:
+        pass
+    elif ((len(node.children)%2 != 0) & (sub_tree_size(node)%2 == 0)):
+#        print "cutting ", node.id, " from ",node.parent.id
+        node.parent.children.remove(node)
+        if(len(node.parent.children)==0):
+            node.parent.isLeaf = True
+        node.parent = node
+        node.set_root()
+        count = count + 1
+    else:
+        snip(node.parent)
+#    print "exit snip:",node.id
+
+def dfs(node):
+#    print "dfs:",node.id
+    for child in node.children:
+        #print "I am on child ",child.id
+        if not child.isLeaf:
+         #   print "child ",child.id," is not a leaf..looking at child"
+            dfs(child)
+        #print "child is leaf...should go to next child"
+    snip(node)
+#    print "exit dfs:",node.id
+
+count = 0
+old_count = 0
+dfs(nodes[0])
 while count != old_count:
     old_count = count
-    snip()
+    for node in nodes:
+        if node.isRoot:
+            dfs(node)
 
 print count
